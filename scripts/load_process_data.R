@@ -26,16 +26,36 @@ cont_bog %>% filter(lubridate::date(date) > lubridate::ymd("2020-03-01")) %>%
 #%>% ungroup() %>%
 #  mutate( across(CO:O3, ~ .x-lag(.x) ) ) 
 
+## stations 
+cont_bog %>% 
+  distinct( id_station )
 
+cont_bog %>%
+  filter(!is.na(value)) %>%
+  group_by(id_station, id_parameter, year = year(date)) %>%
+  summarize(n = n()/24) %>% ungroup() %>%
+  reshape2::dcast(id_station+year~id_parameter, value.var = "n")
+  
 ## sao paulo
 load(file = c("./data/cont_sp.RData"))
 cont_sp %>% arrange(date, id_station, id_parameter) -> cont_sp #order by date
 str(cont_sp)
 
+unique(cont_sp$id_station)
 cont_sp %>% 
   group_by(year = year(date), id_station) %>%
   summarize(miss_values = mean(is.na(value))) %>%
   arrange(desc(miss_values))
+
+## stations 
+cont_sp %>% 
+  distinct(id_station )
+
+cont_sp %>%
+  filter(!is.na(value)) %>%
+  group_by(id_station, id_parameter, year = year(date)) %>%
+  summarize(n = n()/24) %>% ungroup() %>%
+  reshape2::dcast(id_station+year~id_parameter, value.var = "n")
 
 ## valley of mexico
 load(file = c("./data/zmvm.RData"))
@@ -45,7 +65,9 @@ rm(cont.final)
 cont_mx %>% 
   group_by(year = year(date), id_station) %>%
   summarize(miss_values = mean(is.na(value))) %>%
-  arrange(desc(miss_values))
+  group_by(id_station) %>%
+  
+  filter( all(miss_values <= 0.25) ) %>% distinct(id_station) %>% pull(id_station)
 
 ######################Mobility data
 ## Google Mobility Index

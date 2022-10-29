@@ -38,3 +38,30 @@ grid.arrange(grid1, grid2)
 ?timeVariation
 
 ###### Highest value per pollutant##############
+cont_bog %>%  select(-ref) %>%
+  mutate(year_group = ifelse(year(date)==2020, 
+                             "gr_2020", 
+                             "gr_2016_19"),
+         doy = lubridate::yday(date),
+         period_ld =  ifelse(doy %in% c(1:79), "No LD",  #79 - 20/03/2022
+                             ifelse(doy %in% c(80:118),  #80:118 - 27/04/2022
+                                    "LD March and April", "After LD")) ) %>%
+  
+  filter( year_group ==  "gr_2020" ) %>%
+  group_by(id_parameter, period_ld) %>%
+  
+  summarize(maximum = max(value, na.rm = T), minimum = min(value, na.rm = T)) -> minmax_bog
+
+cont_mx %>%  select(-ref) %>%
+  mutate(year_group = ifelse(year(date)==2020, 
+                             "gr_2020", 
+                             "gr_2016_19"),
+         doy = lubridate::yday(date),
+         period_ld =  ifelse(doy %in% c(1:79), "No LD",  #79 - 20/03/2022
+                             ifelse(doy %in% c(80:118),  #80:118 - 27/04/2022
+                                    "LD March and April", "After LD")) ) %>%
+  
+  filter( year_group ==  "gr_2020" ) %>%
+  group_by(id_parameter, period_ld) %>%
+  
+  summarize(maximum = max(value, na.rm = T), minimum = min(value, na.rm = T)) -> minmax_mx
